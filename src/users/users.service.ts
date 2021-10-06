@@ -11,6 +11,10 @@ import * as bcrypt from 'bcrypt';
 export class UsersService {
   constructor(private db: PrismaService) {}
 
+  async findMany(): Promise<User[]> {
+    return this.db.user.findMany();
+  }
+
   async findUnique(username: string): Promise<User> {
     const user = await this.db.user.findUnique({
       where: { username },
@@ -42,5 +46,17 @@ export class UsersService {
     });
 
     return user;
+  }
+
+  async deleteOneUser(username: string): Promise<User> {
+    const user = await this.db.user.findUnique({
+      where: { username },
+    });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return this.db.user.delete({ where: user });
   }
 }
