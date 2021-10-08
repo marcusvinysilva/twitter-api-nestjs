@@ -48,15 +48,19 @@ export class UsersService {
     return user;
   }
 
-  // async deleteOneUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
-  //   const user = await this.db.user.findUnique({
-  //     where,
-  //   });
+  async deleteOneUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
+    const { username } = where;
 
-  //   if (!user) {
-  //     throw new NotFoundException();
-  //   }
+    console.log(where);
 
-  //   return this.db.user.delete({ where: user });
-  // }
+    const user = await this.db.user.findUnique({
+      where: { username },
+    });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return this.db.user.delete({ where: user });
+  }
 }
