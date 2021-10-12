@@ -2,12 +2,12 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { User, Prisma } from '.prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './users.dto';
-import { Request } from 'express';
 
 @Injectable()
 export class UsersService {
@@ -48,6 +48,11 @@ export class UsersService {
             text: true,
           },
         },
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
       },
     });
 
@@ -75,17 +80,24 @@ export class UsersService {
     });
   }
 
-  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
-    const { id } = where;
-
-    const user = await this.db.user.findUnique({
+  async deleteUser(id: number): Promise<User> {
+    const userAuth = await this.db.user.findUnique({
       where: { id },
+      select: {
+        id: true,
+      },
     });
 
-    if (!user) {
-      throw new NotFoundException('user_not_found');
+    if (!userAuth) {
+      throw new NotFoundException();
     }
 
-    return this.db.user.delete({ where: { id } });
+    if (userAuth.id !== id) {
+      throw new UnauthorizedException();
+    }
+
+    return this.db.user.delete({
+      where: { id },
+    });
   }
 }

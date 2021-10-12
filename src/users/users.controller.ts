@@ -47,6 +47,6 @@ export class UsersController {
   @UsePipes(ValidationPipe)
   @Delete('delete/:id')
   deleteUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
-    return this.service.deleteUser({ id: id });
+    return this.service.deleteUser(id);
   }
 }

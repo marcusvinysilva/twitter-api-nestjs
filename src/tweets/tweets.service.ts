@@ -1,5 +1,9 @@
-import { Tweet, Prisma } from '.prisma/client';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Tweet, Prisma, Like } from '.prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTweetDto } from './tweet.dto';
 
@@ -7,19 +11,46 @@ import { CreateTweetDto } from './tweet.dto';
 export class TweetsService {
   constructor(private db: PrismaService) {}
 
-  async createTweet(data: CreateTweetDto): Promise<Tweet> {
-    return this.db.tweet.create({ data });
+  async createTweet(data: CreateTweetDto, user: number): Promise<Tweet> {
+    return await this.db.tweet.create({
+      data: {
+        ...data,
+        userId: user,
+      },
+    });
   }
 
-  async deleteTweet(where: Prisma.TweetWhereUniqueInput): Promise<Tweet> {
-    const { id } = where;
+  async findManyTweets(): Promise<Tweet[]> {
+    return await this.db.tweet.findMany({
+      include: {
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
+        User: {
+          select: {
+            username: true,
+          },
+        },
+      },
+    });
+  }
 
-    const tweet = await this.db.tweet.findUnique({
+  async deleteTweet(id: number, userId: number): Promise<Tweet> {
+    const userTweet = await this.db.tweet.findUnique({
       where: { id },
+      select: {
+        userId: true,
+      },
     });
 
-    if (!tweet) {
-      throw new NotFoundException('tweet_not_found');
+    if (!userTweet) {
+      throw new NotFoundException();
+    }
+
+    if (userTweet.userId != userId) {
+      throw new UnauthorizedException();
     }
 
     return this.db.tweet.delete({ where: { id } });
