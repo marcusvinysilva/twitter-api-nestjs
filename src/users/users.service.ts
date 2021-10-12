@@ -61,7 +61,15 @@ export class UsersService {
   }
 
   async update(id: number, data: CreateUserDto): Promise<User> {
-    return this.db.user.update({
+    const user = await this.db.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('user_not_found');
+    }
+
+    return await this.db.user.update({
       where: { id },
       data,
     });
