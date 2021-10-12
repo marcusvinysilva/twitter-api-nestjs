@@ -23,14 +23,14 @@ export class UsersController {
   @UsePipes(ValidationPipe)
   @Post('create')
   async create(@Body() createUser: CreateUserDto): Promise<User> {
-    return this.service.create(createUser);
+    return this.service.createUser(createUser);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(ValidationPipe)
   @Get('list/:id')
   async findUnique(@Param('id', ParseIntPipe) id: number): Promise<User> {
-    return this.service.findUnique(id);
+    return this.service.findUniqueUser(id);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -40,13 +40,13 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUser: CreateUserDto,
   ): Promise<User> {
-    return this.service.update(id, updateUser);
+    return this.service.updateUser(id, updateUser);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(ValidationPipe)
   @Delete('delete/:id')
   deleteOneUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
-    return this.service.deleteOneUser({ id: id });
+    return this.service.deleteUser({ id: id });
   }
 }

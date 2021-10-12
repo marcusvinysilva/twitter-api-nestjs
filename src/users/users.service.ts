@@ -13,7 +13,7 @@ import { Request } from 'express';
 export class UsersService {
   constructor(private db: PrismaService) {}
 
-  async create(data: CreateUserDto): Promise<User> {
+  async createUser(data: CreateUserDto): Promise<User> {
     const existing = await this.db.user.findUnique({
       where: { username: data.username },
     });
@@ -34,7 +34,7 @@ export class UsersService {
     return user;
   }
 
-  async findUnique(id: number): Promise<User> {
+  async findUniqueUser(id: number): Promise<User> {
     const user = await this.db.user.findUnique({
       where: { id },
       include: {
@@ -60,7 +60,7 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, data: CreateUserDto): Promise<User> {
+  async updateUser(id: number, data: CreateUserDto): Promise<User> {
     const user = await this.db.user.findUnique({
       where: { id },
     });
@@ -75,7 +75,7 @@ export class UsersService {
     });
   }
 
-  async deleteOneUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
+  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
     const { id } = where;
 
     const user = await this.db.user.findUnique({
