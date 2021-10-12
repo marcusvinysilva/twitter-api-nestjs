@@ -1,12 +1,22 @@
-import { IsString, Length } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator';
 
 export class CreateTweetDto {
   @IsString()
   @Length(2, 280)
-  texto: string;
+  @IsNotEmpty()
+  text: string;
 
-  criadoEm: Date;
+  @IsNumber()
+  @IsOptional()
+  userId: number;
 
-  @IsString()
-  User: string;
+  @IsNumber()
+  @IsOptional()
+  likes: number[];
 }
