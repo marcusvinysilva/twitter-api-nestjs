@@ -6,28 +6,14 @@ import {
 import { User, Prisma } from '.prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from './users.dto';
+import { Request } from 'express';
 
 @Injectable()
 export class UsersService {
   constructor(private db: PrismaService) {}
 
-  async findMany(): Promise<User[]> {
-    return this.db.user.findMany();
-  }
-
-  async findUnique(username: string): Promise<User> {
-    const user = await this.db.user.findUnique({
-      where: { username },
-    });
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    return user;
-  }
-
-  async create(data: Prisma.UserCreateInput): Promise<User> {
+  async create(data: CreateUserDto): Promise<User> {
     const existing = await this.db.user.findUnique({
       where: { username: data.username },
     });
@@ -48,19 +34,50 @@ export class UsersService {
     return user;
   }
 
-  async deleteOneUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
-    const { username } = where;
-
-    console.log(where);
-
+  async findUnique(id: number): Promise<User> {
     const user = await this.db.user.findUnique({
-      where: { username },
+      where: { id },
+      include: {
+        follows: {
+          select: {
+            followedId: true,
+          },
+        },
+        tweets: {
+          select: {
+            text: true,
+          },
+        },
+      },
     });
 
     if (!user) {
-      throw new NotFoundException();
+      throw new NotFoundException('user_not_found');
     }
 
-    return this.db.user.delete({ where: user });
+    delete user.password;
+
+    return user;
+  }
+
+  async update(id: number, data: CreateUserDto): Promise<User> {
+    return this.db.user.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async deleteOneUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
+    const { id } = where;
+
+    const user = await this.db.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('user_not_found');
+    }
+
+    return this.db.user.delete({ where: { id } });
   }
 }
